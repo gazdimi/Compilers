@@ -52,9 +52,10 @@ bool Automaton::Start(std::queue<char>inputQueue){
 bool Automaton::Feed(char input){
     for(int i=0; i<4;i++){
         if(IsValidState(allStates[i],input)){
-            PrettyPrint::print(symbolStack,currentState,inputQ,allStates[i].GetRuleNumber());
             currentState=allStates[i].GetNtState();
+            PrettyPrint::print(symbolStack,currentState,inputQ,allStates[i].GetRuleNumber());
             OperateStack(allStates[i].GetNtSymbol());
+
             return true;
         }
     }
