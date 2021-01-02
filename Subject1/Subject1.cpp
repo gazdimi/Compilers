@@ -1,18 +1,5 @@
-#include <iostream>
 #include <queue>
 #include "Automaton.h"
-
-void PrintAllStates(state allStates[4]){
-    std::cout<<"State    Symbol    nextSymbol    nextState    Symbol    ruleNumber"<<std::endl;
-    for(int i=0;i<4;i++){
-        std::cout<<allStates[i].GetStName()<<"       "<<
-        allStates[i].GetCSymbol()<<"         "<<
-        allStates[i].GetISymbol()<<"             "<<
-        allStates[i].GetNtState()<<"           "<<
-        allStates[i].GetNtSymbol()<<"        "<<
-        allStates[i].GetRuleNumber()<<std::endl;
-    }
-}
 
 int main(int argc,char *argv[])
 {
@@ -23,27 +10,8 @@ int main(int argc,char *argv[])
         inputQueue.push(argv[i][j]);
         }
     }
+    int spaces=20;
+    std::cout<<"Stack"<<std::string(spaces,' ')<<"State"<<std::string(spaces,' ')<<"Input"<<std::string(spaces,' ')<<"Rule"<<std::endl;
     Automaton automaton = Automaton();
-    for(int i=0; i<inputQueue.size();i++){
-        if(!automaton.completed){
-            if(!automaton.Feed(inputQueue.front())){
-                std::cout<<"No valid state found"<<std::endl;
-                return -1;
-            }
-            else{
-                std::cout<<inputQueue.front()<<std::endl;
-                inputQueue.pop();
-            }
-        }
-        else{
-            break;
-        }
-    }
-    if(automaton.completed&&inputQueue.size()>0){
-        std::cout<<"Automaton finished without compiling all input."<<std::endl;
-    }else if(!automaton.completed&&inputQueue.size()<=0){
-        std::cout<<"Operation stoped unexpectedly."<<std::endl;
-    }else if (automaton.completed&&inputQueue.size()<=0){
-    std::cout<<"Operation completed Successfully."<<std::endl;
-    }
+    automaton.Start(inputQueue);
 }
