@@ -23,9 +23,9 @@ public:
 Automaton::Automaton()
 {
     //State initialization.
-    allStates[0]= state("k1",'$','(',1,"k1",'P');
-    allStates[1]= state("k1",'P','(',2,"k1",'P');
-    allStates[2]= state("k1",'P',')',3,"k1",'e');
+    allStates[0]= state("k1",'$','x',1,"k1",'P');
+    allStates[1]= state("k1",'P','x',2,"k1",'P');
+    allStates[2]= state("k1",'P','y',3,"k1",'e');
     allStates[3]= state("k1",'$','e',4,"k2",'e');
     currentState="k1";
     symbolStack.push('$');//Symbol stack initialization.
