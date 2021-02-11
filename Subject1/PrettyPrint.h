@@ -7,6 +7,7 @@ class PrettyPrint
 public:
     static void print(std::stack<char> symbols,std::string stateName,std::queue<char> input,int rule);
 };
+
 void PrettyPrint::print(std::stack<char> symbols,std::string stateName,std::queue<char> input, int rule){
     const int spaces=20;
     const int symbolsSize=symbols.size();

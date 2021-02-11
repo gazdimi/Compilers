@@ -11,7 +11,7 @@ int main(int argc,char *argv[])
         }
     }
     int spaces=20;
-    std::cout<<"Stack"<<std::string(spaces,' ')<<"State"<<std::string(spaces,' ')<<"Input"<<std::string(spaces,' ')<<"Rule"<<std::endl;
-    Automaton automaton = Automaton();
-    automaton.Start(inputQueue);
+    std::cout << "Stack" << std::string(spaces,' ') << "State" << std::string(spaces,' ') << "Input" << std::string(spaces,' ') << "Rule" << std::endl;
+    Automaton automaton = Automaton();			//initialization of pushdown automaton
+    automaton.Start(inputQueue);			//pass user input to check whether it can be identified
 }
