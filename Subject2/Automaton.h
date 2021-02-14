@@ -15,6 +15,9 @@ private:
 	std::vector<std::string> non_terminals;
 	int randomChoice(const int begin, const int end);
 	void Start();
+	void applyRulePart(std::string non_terminal, int rule_part);
+	bool checkToStop();
+	int times = 0;
 public:
 	Automaton();
 	~Automaton();
@@ -68,6 +71,7 @@ Automaton::~Automaton(){ }
 
 void Automaton::Start()												//start generating
 {
+	int rule_part; int rule;
 	std::vector<std::string> temp_non_terminals;
 	for(auto i = generated_output.begin(); i != generated_output.end(); ++i)
 	{
@@ -76,28 +80,69 @@ void Automaton::Start()												//start generating
 		}
 	}
 
-	if(temp_non_terminals.size() ==  0)									//no more rules can be applied, only terminals included in generated output 
-	{
-		std::cout << "My job here is done!" << std::endl;	
-	}else if(temp_non_terminals.size() ==  1){								//only one rule can be applied
+	if(temp_non_terminals.size() ==  1){								//only one rule can be applied
 		
-		if(temp_non_terminals[0]=="<E>" | temp_non_terminals[0]=="<Y>"){				//rule has only one production part
-			auto it = std::find(generated_output.begin(), generated_output.end(), temp_non_terminals[0]);
-		    	if (it != generated_output.end()) {
-				it = generated_output.erase(it);
-				for (int j=0; j<rules[temp_non_terminals[0]][0].size(); ++j)
-				{
-					it = generated_output.insert(it, rules[temp_non_terminals[0]][0][j]);
-					++it;
-				}
-				for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
-					std::cout << ' ' << *it2;
-					
-				std::cout << std::endl;
-			}
-		}else{												//rule has 2 or more production parts, we need to choose a random part among them
+		if(temp_non_terminals[0]=="<E>" | temp_non_terminals[0]=="<Y>"){				//the single rule has only one production part
+			applyRulePart(temp_non_terminals[0], 0);
+			if(temp_non_terminals[0]=="<E>"){times++;}
+
+		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
+			rule_part = randomChoice(0, rules[temp_non_terminals[0]].size()-1);
+			applyRulePart(temp_non_terminals[0], rule_part);		
 		}
-	}else{}
+	}else{													//2 or more rules can be applied, we need to choose a random rule among them and then apply it
+		rule = randomChoice(0,  temp_non_terminals.size()-1);
+
+		if(temp_non_terminals[rule]=="<E>" | temp_non_terminals[rule]=="<Y>"){				//the choosen rule has only one production part
+			applyRulePart(temp_non_terminals[rule], 0);
+			if(temp_non_terminals[0]=="<E>"){times++;}
+		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
+			rule_part = randomChoice(0, rules[temp_non_terminals[rule]].size()-1);
+			applyRulePart(temp_non_terminals[rule], rule_part);		
+		}
+	}
+	temp_non_terminals.erase(temp_non_terminals.begin() + rule);						//remove non terminal that was replaced
+	bool stop = checkToStop();
+	if(stop)												//no more rules can be applied, only terminals included in generated output 
+	{
+		std::cout << "Finished!"<<std::endl;
+		for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
+			std::cout << ' ' << *it2;				
+		std::cout << std::endl;
+	}else{
+		std::cout<<"Not finished yet!"<<std::endl;
+		/*for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
+			std::cout << ' ' << *it2;				
+		std::cout << std::endl;*/
+		Start();
+	}
+}
+
+void Automaton::applyRulePart(std::string non_terminal, int rule_part)						//apply right-side of the rule to the generayed output
+{
+	auto it = std::find(generated_output.begin(), generated_output.end(), non_terminal);			//find the position in the generated output, where the rule_part should be applied
+	if (it != generated_output.end()) {
+		it = generated_output.erase(it);								//remove the symbol from generated ouput, that will be replaced with rule's production part
+		for (int j=0; j<rules[non_terminal][rule_part].size(); ++j)
+		{
+			if(rules[non_terminal][rule_part][j] != "e"){
+				it = generated_output.insert(it, rules[non_terminal][rule_part][j]);
+				++it;
+			}
+		}
+	}
+}
+
+bool Automaton::checkToStop()											//check if generated output's symbols are terminals
+{
+	int check = 0;
+	for (auto i = generated_output.begin(); i!=generated_output.end(); ++i)
+	{
+		if(std::find(terminals.begin(), terminals.end(), *i) != terminals.end()) {
+    			check++;
+		}	
+	}
+	if(check == generated_output.size() | times==100) { return true; } else { return false;}
 }
 
 int Automaton::randomChoice(const int begin, const int end)
