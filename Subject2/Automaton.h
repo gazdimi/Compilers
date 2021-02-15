@@ -5,6 +5,8 @@
 #include <random>
 #include <algorithm>
 #include <list>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 class Automaton
 {
@@ -17,7 +19,8 @@ private:
 	void Start();
 	void applyRulePart(std::string non_terminal, int rule_part);
 	bool checkToStop();
-	int times = 0;
+	int randomWithWeights();
+	int weight = 4;
 public:
 	Automaton();
 	~Automaton();
@@ -84,10 +87,13 @@ void Automaton::Start()												//start generating
 		
 		if(temp_non_terminals[0]=="<E>" | temp_non_terminals[0]=="<Y>"){				//the single rule has only one production part
 			applyRulePart(temp_non_terminals[0], 0);
-			if(temp_non_terminals[0]=="<E>"){times++;}
 
 		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
-			rule_part = randomChoice(0, rules[temp_non_terminals[0]].size()-1);
+			if(temp_non_terminals[0] == "<A>"){ 
+				rule_part = randomWithWeights(); 
+			}else{			
+				rule_part = randomChoice(0, rules[temp_non_terminals[0]].size()-1);
+			}
 			applyRulePart(temp_non_terminals[0], rule_part);		
 		}
 	}else{													//2 or more rules can be applied, we need to choose a random rule among them and then apply it
@@ -95,9 +101,13 @@ void Automaton::Start()												//start generating
 
 		if(temp_non_terminals[rule]=="<E>" | temp_non_terminals[rule]=="<Y>"){				//the choosen rule has only one production part
 			applyRulePart(temp_non_terminals[rule], 0);
-			if(temp_non_terminals[0]=="<E>"){times++;}
 		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
-			rule_part = randomChoice(0, rules[temp_non_terminals[rule]].size()-1);
+			
+			if(temp_non_terminals[rule] == "<A>"){
+				rule_part = randomWithWeights();
+			}else{ 
+				rule_part = randomChoice(0, rules[temp_non_terminals[rule]].size()-1);
+			}
 			applyRulePart(temp_non_terminals[rule], rule_part);		
 		}
 	}
@@ -110,7 +120,7 @@ void Automaton::Start()												//start generating
 			std::cout << ' ' << *it2;				
 		std::cout << std::endl;
 	}else{
-		std::cout<<"Not finished yet!"<<std::endl;
+		//std::cout<<"Not finished yet!"<<std::endl;
 		/*for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
 			std::cout << ' ' << *it2;				
 		std::cout << std::endl;*/
@@ -142,7 +152,7 @@ bool Automaton::checkToStop()											//check if generated output's symbols ar
     			check++;
 		}	
 	}
-	if(check == generated_output.size() | times==100) { return true; } else { return false;}
+	if(check == generated_output.size()) { return true; } else { return false;}
 }
 
 int Automaton::randomChoice(const int begin, const int end)
@@ -151,4 +161,18 @@ int Automaton::randomChoice(const int begin, const int end)
 	std::mt19937 generator(random_dev());
 	std::uniform_int_distribution<int>  distr(begin, end);
 	return distr(generator);
+}
+
+int Automaton::randomWithWeights()
+{
+	srand(time(0));
+	int prob = rand() % 10;
+	if(prob > 0 & prob <= weight )
+	{
+		return 0;
+	}else{	
+		if(weight < 10) { weight++; }
+		return 1;
+	}
+
 }
