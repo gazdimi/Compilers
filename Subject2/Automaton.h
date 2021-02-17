@@ -7,6 +7,7 @@
 #include <list>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include "PrettyPrint.h"
 
 class Automaton
 {
@@ -48,14 +49,10 @@ Automaton::Automaton()
 		rules[non_terminals[i]] = production;
 	}
 	
-	for(auto i = rules["<E>"][0].begin(); i<rules["<E>"][0].end(); i++){ generated_output.push_back(*i); 	}	//rules["<E>"][0][0]
-	//for(auto i = generated_output.begin(); i != generated_output.end(); ++i){ std::cout << *i << std::endl;}
-	
-	Start();
-
-	/*for (auto rule : rules)
+	int number = 1;
+	for (auto rule : rules)
 	{
-		std::cout << rule.first << " ::= ";
+		std::cout << number << ". " << rule.first << " ::= ";
 		for( auto right_side : rule.second)
 		{ 
 			for(int j=0; j<right_side.second.size(); ++j)
@@ -67,7 +64,15 @@ Automaton::Automaton()
 			}
 		}
 		std::cout << std::endl;
-	}*/
+		++number;
+	}
+	int spaces = 12;
+    	std::cout << std::endl <<"Generated Output" << std::string(spaces,' ') << "Non-terminal" << std::string(spaces,' ') << "Production" << std::string(spaces,' ') << "Rule" << std::endl;
+
+	std::cout << "<E>" << std::endl;
+	for(auto i = rules["<E>"][0].begin(); i<rules["<E>"][0].end(); i++){ generated_output.push_back(*i); 	}
+	PrettyPrint::print(generated_output, "<E>", rules["<E>"][0], 1);
+	Start();
 }
 
 Automaton::~Automaton(){ }
@@ -111,19 +116,16 @@ void Automaton::Start()												//start generating
 			applyRulePart(temp_non_terminals[rule], rule_part);		
 		}
 	}
+	
 	temp_non_terminals.erase(temp_non_terminals.begin() + rule);						//remove non terminal that was replaced
 	bool stop = checkToStop();
 	if(stop)												//no more rules can be applied, only terminals included in generated output 
 	{
-		std::cout << "Finished!"<<std::endl;
-		for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
-			std::cout << ' ' << *it2;				
+		std::cout << std::endl << "Generated Output: ";
+		for (auto it=generated_output.begin(); it!=generated_output.end(); ++it)
+			std::cout << *it;
 		std::cout << std::endl;
 	}else{
-		//std::cout<<"Not finished yet!"<<std::endl;
-		/*for (auto it2=generated_output.begin(); it2!=generated_output.end(); ++it2)
-			std::cout << ' ' << *it2;				
-		std::cout << std::endl;*/
 		Start();
 	}
 }
@@ -141,6 +143,15 @@ void Automaton::applyRulePart(std::string non_terminal, int rule_part)						//ap
 			}
 		}
 	}
+	int rule;
+	if(non_terminal == "<E>"){
+		rule = 1;
+	}else if(non_terminal == "<Y>"){
+		rule = 2;
+	}else if(non_terminal == "<A>"){
+		rule = 3;
+	}else{ rule = 4;}
+	PrettyPrint::print(generated_output, non_terminal, rules[non_terminal][rule_part], rule);
 }
 
 bool Automaton::checkToStop()											//check if generated output's symbols are terminals
