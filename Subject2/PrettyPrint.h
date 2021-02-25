@@ -7,6 +7,7 @@ class PrettyPrint
 {
 public:
 	static void print(std::list<std::string> generated_output, std::string non_terminal, std::vector<std::string> rule_part,int rule);
+	static void printRules();
 };
 
 void PrettyPrint::print(std::list<std::string> generated_output, std::string non_terminal, std::vector<std::string> rule_part,int rule)
@@ -58,6 +59,12 @@ void PrettyPrint::print(std::list<std::string> generated_output, std::string non
 	
 	std::cout << std::string((spaces - rulePartSize) + 2,' ');
 	std::cout << rule << std::endl;
+}
+void PrettyPrint::printRules()
+{
+	std::cout << "1. <E> ::= (<Y>)" << std::endl;
+	std::cout << "2. <Y> ::= <A><B>" << std::endl;
+	std::cout << "3. <A> ::= v | <E>" << std::endl;
+	std::cout << "4. <B> ::= -<Y> | +<Y> | e" << std::endl;
 
 }
-

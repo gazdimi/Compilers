@@ -48,27 +48,11 @@ Automaton::Automaton()
 		}
 		rules[non_terminals[i]] = production;
 	}
+	PrettyPrint::printRules();
 	
-	int number = 1;
-	for (auto rule : rules)
-	{
-		std::cout << number << ". " << rule.first << " ::= ";
-		for( auto right_side : rule.second)
-		{ 
-			for(int j=0; j<right_side.second.size(); ++j)
-			{
-				if(right_side.first != 0 & (j+1 == right_side.second[j].size() | right_side.second.size()==1)){ 
-					std::cout << " | ";
-				}
-				std::cout << right_side.second[j];
-			}
-		}
-		std::cout << std::endl;
-		++number;
-	}
 	int spaces = 12;
     	std::cout << std::endl <<"Generated Output" << std::string(spaces,' ') << "Non-terminal" << std::string(spaces,' ') << "Production" << std::string(spaces,' ') << "Rule" << std::endl;
-
+	
 	std::cout << "<E>" << std::endl;
 	for(auto i = rules["<E>"][0].begin(); i<rules["<E>"][0].end(); i++){ generated_output.push_back(*i); 	}
 	PrettyPrint::print(generated_output, "<E>", rules["<E>"][0], 1);
@@ -88,35 +72,24 @@ void Automaton::Start()												//start generating
 		}
 	}
 
-	if(temp_non_terminals.size() ==  1){								//only one rule can be applied
-		
-		if(temp_non_terminals[0]=="<E>" | temp_non_terminals[0]=="<Y>"){				//the single rule has only one production part
-			applyRulePart(temp_non_terminals[0], 0);
-
-		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
-			if(temp_non_terminals[0] == "<A>"){ 
-				rule_part = randomWithWeights(); 
-			}else{			
-				rule_part = randomChoice(0, rules[temp_non_terminals[0]].size()-1);
-			}
-			applyRulePart(temp_non_terminals[0], rule_part);		
-		}
+	if(temp_non_terminals.size() ==  1){									//only one rule can be applied
+		rule = 0;
 	}else{													//2 or more rules can be applied, we need to choose a random rule among them and then apply it
 		rule = randomChoice(0,  temp_non_terminals.size()-1);
-
-		if(temp_non_terminals[rule]=="<E>" | temp_non_terminals[rule]=="<Y>"){				//the choosen rule has only one production part
-			applyRulePart(temp_non_terminals[rule], 0);
-		}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
-			
-			if(temp_non_terminals[rule] == "<A>"){
-				rule_part = randomWithWeights();
-			}else{ 
-				rule_part = randomChoice(0, rules[temp_non_terminals[rule]].size()-1);
-			}
-			applyRulePart(temp_non_terminals[rule], rule_part);		
-		}
 	}
 	
+	if(temp_non_terminals[rule]=="<E>" | temp_non_terminals[rule]=="<Y>"){				//the choosen rule has only one production part
+			applyRulePart(temp_non_terminals[rule], 0);
+	}else{												//the single rule has 2 or more production parts, we need to choose a random part among them
+		
+		if(temp_non_terminals[rule] == "<A>"){
+			rule_part = randomWithWeights();
+		}else{ 
+			rule_part = randomChoice(0, rules[temp_non_terminals[rule]].size()-1);
+		}
+			applyRulePart(temp_non_terminals[rule], rule_part);		
+	}
+
 	temp_non_terminals.erase(temp_non_terminals.begin() + rule);						//remove non terminal that was replaced
 	bool stop = checkToStop();
 	if(stop)												//no more rules can be applied, only terminals included in generated output 
@@ -170,8 +143,8 @@ int Automaton::randomChoice(const int begin, const int end)
 {
 	std::random_device random_dev;
 	std::mt19937 generator(random_dev());
-	std::uniform_int_distribution<int>  distr(begin, end);
-	return distr(generator);
+	std::uniform_int_distribution<int>  distribution(begin, end);
+	return distribution(generator);
 }
 
 int Automaton::randomWithWeights()
@@ -185,5 +158,4 @@ int Automaton::randomWithWeights()
 		if(weight < 10) { weight++; }
 		return 1;
 	}
-
 }
