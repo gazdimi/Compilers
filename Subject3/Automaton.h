@@ -200,24 +200,13 @@ void Automaton::OperateStack(int symbol){
 
 void Automaton::Print_tree(){
 	
-	
-	bool chLevel=false;
-	int tabs = (int) round(Tree_Depth()/2);
-
-	std::cout << std::string(tabs,'\t') << "S" << std::endl << std::endl;
-	std::cout << std::string(tabs-1,'\t') << "(";
-	std::cout << std::string(1,'\t') << "X";
-	std::cout << std::string(1,'\t') << ")" << std::endl << std::endl;
-	std::cout << std::string(tabs-1,'\t') << "Y";
-	std::cout << std::string(2,'\t') << "Z" << std::endl << std::endl;
-	
 	std::list <std::vector <std::string>> levels;
 	std::vector <std::string> temp;
 
 	auto it = std::find(tree.begin(), tree.end(), "Z");	// basic tree
 	++it;
 	auto tmp = it;
-	for(it;it!=tree.end();++it){
+	for(it; it!=tree.end(); ++it){				//creating subtrees
 		
 		temp.push_back(*it);
 		
@@ -233,41 +222,71 @@ void Automaton::Print_tree(){
 		}
 	}
 
+	int tabs = ceil((double)Tree_Depth()/2);
 
+	std::cout << std::string(tabs,'\t') << "S" << std::endl << std::endl;
+	std::cout << std::string(tabs-levels.size()-1,'\t') << "("; //std::cout << std::string(tabs-1,'\t') << "(";				(tabs/levels.size())-1
+	std::cout << std::string(levels.size()+1,'\t') << "X"; //std::cout << std::string(1,'\t') << "X";
+	std::cout << std::string(levels.size()+1,'\t') << ")" << std::endl << std::endl; //std::cout << std::string(1,'\t') << ")" << std::endl << std::endl;
+	std::cout << std::string(tabs-levels.size()-1,'\t') << "Y"; //std::cout << std::string(tabs-1,'\t') << "Y";
+	std::cout << std::string((levels.size()+1)*2,'\t') << "Z" << std::endl << std::endl; //std::cout << std::string(2,'\t') << "Z" << std::endl << std::endl;
+
+	int middle_tabs = (levels.size()+1)*2 - 1;
+	int next_level_tabs = 0;
+	int first_node = 0;
 	for(auto i : levels){
-		auto pt = i.begin();
-		for(int j=0;j<i.size();++j){
+		for(auto j=i.begin(); j!=i.end();){
+			first_node++;
 			if(levels.size()==1){
 				
-				//std::cout << "Before" << i[j];
-				if(i[j]=="+" || i[j]=="*" || i[j]=="-"){
-					std::cout << std::string(1,'\t') << i[j];
-					std::cout << std::string(1,'\t') << "X" << std::endl << std::endl;
-					i.erase(i.begin(),++pt);
-					j=0;
-					pt = i.begin();
+				if(*j=="+" | *j=="*" | *j =="-"){
+					std::cout << std::string(middle_tabs,'\t') << *j; //std::cout << std::string(1,'\t') << *j;
+					std::cout << std::string(levels.size()+1,'\t') << "X" << std::endl << std::endl; //std::cout << std::string(2,'\t') << "X" << std::endl << std::endl;
+					j+=2;
+					i.erase(i.begin(), j);
+					j = i.begin();
+					next_level_tabs+=middle_tabs + levels.size(); //next_level_tabs+=tabs+levels.size();//2;
+					middle_tabs--;
 					
-				}else if(i[j]=="Y"){
-					std::cout << std::string(tabs,'\t') << i[j];
-					std::cout << std::string(1,'\t') << "Z" << std::endl << std::endl;
-					i.erase(i.begin(),++pt);
-					j=0;
-					pt = i.begin();
+				}else if(*j=="Y"){
+					std::cout << std::string(next_level_tabs,'\t') << *j;
+					std::cout << std::string(levels.size()+1,'\t') << "Z" << std::endl << std::endl; //std::cout << std::string(2,'\t') << "Z" << std::endl << std::endl;
+					j+=2;
+					i.erase(i.begin(),j);
+					j = i.begin();
 					
-				}else{
-					std::cout << std::string(tabs-1,'\t') << i[j];
-					i.erase(pt);
-					j=0;
-					pt = i.begin();
-				//gamw to spiti sou	
+				}else if(*j=="e" | *j=="a" | *j=="b" | *j=="S"){
+					if(first_node==1){
+						next_level_tabs = tabs - levels.size()-1;//tabs - 1;
+					}
+					if(*j=="e"){ 
+						i.erase(j);
+						j=i.begin();
+						continue;
+					}
+					std::cout << std::string(next_level_tabs,'\t') << *j;
+					if(*j=="S"){
+						std::cout << std::endl << std::endl;
+						next_level_tabs--;
+					}else if((*j=="a" | *j=="b")&(first_node != 1 )){ middle_tabs--;}
+
+					i.erase(j);
+					j=i.begin();
+					
+				}else if(*j=="("){
+					std::cout << std::string(next_level_tabs,'\t') << *j;
+					std::cout << std::string(1,'\t') << "X" << std::string(1, '\t') << ")" << std::endl << std::endl;
+					j+=3;
+					i.erase(i.begin(), j);
+					j=i.begin();
 				}
-				
-				//std::cout << "After" << i[j];
-				
+			}else{
+
+
 			}
-			++pt;
 		}
 		std::cout << std::endl;
+		first_node = 0;
 	}
 }		      
 		     
@@ -289,7 +308,3 @@ int Automaton::Tree_Depth(){
 	}
 	return *max_element(max.begin(), max.end())+1;		// tree depth is the bond number plus 1
 }
-
-
-
-
