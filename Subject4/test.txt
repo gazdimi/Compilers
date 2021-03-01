@@ -1,0 +1,7 @@
+TesTVar_123=24+another_var/2*123;
+X=a+3*b;
+Y=5%2;
+Z=10/2-a*b;
+12invalid=12;
+var=;
+var=123//var2;
