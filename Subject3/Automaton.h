@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "State.h"
 #include "PrettyPrint.h"
+#include "SymbolTree.h"
 class Automaton
 {
 private:
@@ -17,9 +18,13 @@ private:
     std::queue<std::string> inputQ;
     bool done = false;
     bool right = false;
-    void Print_tree();
     std::list <std::string> tree;
     int Tree_Depth();
+	SymbolTree::node* root;
+	SymbolTree::node* currentNode;
+	std::stack<int> backtracking;
+	int currentRank = 0;
+	void goBack();
     
 public:
     Automaton();
@@ -34,7 +39,7 @@ Automaton::Automaton()						//constructor
 {
     //State initialization.					//initialize rules of pushdown automaton
 	allStates[0] = state("k1","S","(",1,"k1",")X(");
-    	allStates[1] = state("k1","X","(",2,"k1","ZY");
+    allStates[1] = state("k1","X","(",2,"k1","ZY");
 	allStates[2] = state("k1","X","a",3,"k1","ZY");
 	allStates[3] = state("k1","X","b",4,"k1","ZY");
 	allStates[4] = state("k1","Y","a",5,"k1","a");
@@ -54,8 +59,11 @@ Automaton::Automaton()						//constructor
     	allStates[18] = state("k1","$","e",19,"k2","e");
     	currentState = "k1";					//initial state of pushdown automaton
    	symbolStack.push("$");
-	symbolStack.push("S");	
-	tree.push_back("S");				//Symbol stack initialization.					
+	symbolStack.push("S");
+	root = SymbolTree::createNode('S');
+	currentNode = root;
+	tree.push_back("S");				//Symbol stack initialization.	
+	currentRank++;				
 }
 
 
@@ -87,7 +95,7 @@ bool Automaton::Start(std::queue<std::string>inputQueue){
 			std::cout << *i << " ";
 		}
 		std::cout << Tree_Depth() << std::endl;
-		Print_tree();
+		PrettyPrint::Print_tree(tree,Tree_Depth());
 		break;
 	    }
         }
@@ -140,11 +148,30 @@ void Automaton::OperateStack(int symbol){
 		tree.push_back("X");
 		tree.push_back(")");
 		done = true;
+		currentNode -> left = SymbolTree::createNode('(');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode -> middle = SymbolTree::createNode('X');
+		currentNode -> middle -> parent = currentNode;
+
+		currentNode -> right = SymbolTree::createNode(')');
+		currentNode -> right -> parent = currentNode;
+		currentNode = currentNode -> middle;
+		currentRank++;
 	
 	}else if(symbol>=2 && symbol<=4){
 		symbolStack.pop();
 		symbolStack.push("Z");
 		symbolStack.push("Y");
+		
+		backtracking.push(currentRank);
+		currentNode -> left = SymbolTree::createNode('Y');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode -> right = SymbolTree::createNode('Z');
+		currentNode -> right -> parent = currentNode;
+		currentNode = currentNode -> left;
+		currentRank++;
 
 		tree.push_back("Y");
 		tree.push_back("Z");
@@ -153,11 +180,19 @@ void Automaton::OperateStack(int symbol){
 		symbolStack.pop();
 		symbolStack.push("a");
 
+		currentNode -> left = SymbolTree::createNode('a');
+		currentNode -> left -> parent = currentNode;
+		goBack();
+
 		tree.push_back("a");
 		done = true;
 	}else if(symbol==6){
 		symbolStack.pop();
 		symbolStack.push("b");
+
+		currentNode -> left = SymbolTree::createNode('b');
+		currentNode -> left -> parent = currentNode;
+		goBack();
 
 		tree.push_back("b");
 		done = true;
@@ -165,12 +200,27 @@ void Automaton::OperateStack(int symbol){
 		symbolStack.pop();
 		symbolStack.push("S");
 
+		currentNode -> left = SymbolTree::createNode('S');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode = currentNode -> left;
+		currentRank++;
+
 		tree.push_back("S");
 		done = true;
 	}else if(symbol==8){
 		symbolStack.pop();
 		symbolStack.push("X");
 		symbolStack.push("*");
+
+		currentNode -> left = SymbolTree::createNode('*');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode -> right = SymbolTree::createNode('X');
+		currentNode -> right -> parent = currentNode;
+
+		currentNode = currentNode -> right;
+		currentRank++;
 
 		tree.push_back("*");
 		tree.push_back("X");
@@ -180,6 +230,15 @@ void Automaton::OperateStack(int symbol){
 		symbolStack.push("X");
 		symbolStack.push("-");
 
+		currentNode -> left = SymbolTree::createNode('-');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode -> right = SymbolTree::createNode('X');
+		currentNode -> right -> parent = currentNode;
+
+		currentNode = currentNode -> right;
+		currentRank++;
+
 		tree.push_back("-");
 		tree.push_back("X");
 		done = true;
@@ -187,6 +246,15 @@ void Automaton::OperateStack(int symbol){
 		symbolStack.pop();
 		symbolStack.push("X");
 		symbolStack.push("+");
+
+		currentNode -> left = SymbolTree::createNode('+');
+		currentNode -> left -> parent = currentNode;
+
+		currentNode -> right = SymbolTree::createNode('X');
+		currentNode -> right -> parent = currentNode;
+
+		currentNode = currentNode -> right;
+		currentRank++;
 
 		tree.push_back("+");
 		tree.push_back("X");
@@ -197,83 +265,6 @@ void Automaton::OperateStack(int symbol){
 		done = true;
 	}
 }
-
-void Automaton::Print_tree(){
-	
-	
-	bool chLevel=false;
-	int tabs = (int) round(Tree_Depth()/2);
-
-	std::cout << std::string(tabs,'\t') << "S" << std::endl << std::endl;
-	std::cout << std::string(tabs-1,'\t') << "(";
-	std::cout << std::string(1,'\t') << "X";
-	std::cout << std::string(1,'\t') << ")" << std::endl << std::endl;
-	std::cout << std::string(tabs-1,'\t') << "Y";
-	std::cout << std::string(2,'\t') << "Z" << std::endl << std::endl;
-	
-	std::list <std::vector <std::string>> levels;
-	std::vector <std::string> temp;
-
-	auto it = std::find(tree.begin(), tree.end(), "Z");	// basic tree
-	++it;
-	auto tmp = it;
-	for(it;it!=tree.end();++it){
-		
-		temp.push_back(*it);
-		
-		if(*it=="e"){
-			tmp=it;
-			++tmp;
-			
-			levels.push_back(temp);
-			temp.clear();
-			if(tmp==tree.end() || *tmp=="e"){	// if "e+"
-				break;
-			}
-		}
-	}
-
-
-	for(auto i : levels){
-		auto pt = i.begin();
-		for(int j=0;j<i.size();++j){
-			if(levels.size()==1){
-				
-				//std::cout << "Before" << i[j];
-				if(i[j]=="+" || i[j]=="*" || i[j]=="-"){
-					std::cout << std::string(1,'\t') << i[j];
-					std::cout << std::string(1,'\t') << "X" << std::endl << std::endl;
-					i.erase(i.begin(),++pt);
-					j=0;
-					pt = i.begin();
-					
-				}else if(i[j]=="Y"){
-					std::cout << std::string(tabs,'\t') << i[j];
-					std::cout << std::string(1,'\t') << "Z" << std::endl << std::endl;
-					i.erase(i.begin(),++pt);
-					j=0;
-					pt = i.begin();
-					
-				}else{
-					std::cout << std::string(tabs-1,'\t') << i[j];
-					i.erase(pt);
-					j=0;
-					pt = i.begin();
-				//gamw to spiti sou	
-				}
-				
-				//std::cout << "After" << i[j];
-				
-			}
-			++pt;
-		}
-		std::cout << std::endl;
-	}
-}		      
-		     
-		
-
-		
 
 int Automaton::Tree_Depth(){
 	int depth=0;
@@ -290,6 +281,11 @@ int Automaton::Tree_Depth(){
 	return *max_element(max.begin(), max.end())+1;		// tree depth is the bond number plus 1
 }
 
-
-
-
+void Automaton::goBack(){
+	for(int i=0; i < (currentRank-backtracking.top()); i++){
+		currentNode = currentNode -> parent;
+		currentRank--;
+	}
+	backtracking.pop();
+	currentNode = currentNode -> right;
+}
