@@ -14,7 +14,7 @@ public:
 	static void DisplayTree(SymbolTree::node* root,bool firstTime,bool rightfirstSub,int depth);
 };
 
-void PrettyPrint::print(std::stack<std::string> symbols,std::string stateName,std::queue<std::string> input, int rule){
+void PrettyPrint::print(std::stack<std::string> symbols,std::string stateName,std::queue<std::string> input, int rule){	//print stack
     const int spaces=20;
     const int symbolsSize=symbols.size();
     const int inputSize=input.size();
@@ -46,7 +46,7 @@ void PrettyPrint::print(std::stack<std::string> symbols,std::string stateName,st
     }
     std::cout<<rule<<std::endl;
 }
-void PrettyPrint::DisplayTree(SymbolTree::node* root,bool firstTime,bool isfirstX,int tabs){
+void PrettyPrint::DisplayTree(SymbolTree::node* root,bool firstTime,bool isfirstX,int tabs){				//print syntax tree
 	if(firstTime){
 		std::cout<<std::string(tabs,'	')<<root->data<<std::endl;
 		firstTime=!firstTime;
@@ -66,8 +66,6 @@ void PrettyPrint::DisplayTree(SymbolTree::node* root,bool firstTime,bool isfirst
 			}
 		}
 	}
-	
-	
 	
 	bool left= root->left!=NULL;
 	bool middle=root->middle!=NULL;

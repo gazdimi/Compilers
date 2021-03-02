@@ -8,37 +8,35 @@
 class Automaton
 {
 private:
-    state allStates[19];
-    std::string currentState;
-    int ruleNum;
-    std::stack <std::string> symbolStack;
-    void OperateStack(int symbol);
-    bool IsValidState(state cstate,std::string symbol);
-    std::queue<std::string> inputQ;
-    bool done = false;
-    bool right = false;
-    std::list <std::string> tree;
-    int Tree_Depth();
+	state allStates[19];
+	std::string currentState;
+	int ruleNum;
+	std::stack <std::string> symbolStack;
+	void OperateStack(int symbol);
+	bool IsValidState(state cstate,std::string symbol);
+	std::queue<std::string> inputQ;
+	bool done = false;
+	bool right = false;
+	int Tree_Depth();
 	SymbolTree::node* root;
 	SymbolTree::node* currentNode;
 	std::stack<int> backtracking;
 	int currentRank = 0;
 	void goBack();
+	std::list <std::string> tree;
     
 public:
-    Automaton();
-    ~Automaton();
-    bool Feed(std::string input);
-    bool Start(std::queue<std::string> inputQueue);
-    
-    
+	Automaton();
+	~Automaton();
+	bool Feed(std::string input);
+	bool Start(std::queue<std::string> inputQueue);    
 };
 
 Automaton::Automaton()						//constructor
 {
     //State initialization.					//initialize rules of pushdown automaton
 	allStates[0] = state("k1","S","(",1,"k1",")X(");
-    allStates[1] = state("k1","X","(",2,"k1","ZY");
+	allStates[1] = state("k1","X","(",2,"k1","ZY");
 	allStates[2] = state("k1","X","a",3,"k1","ZY");
 	allStates[3] = state("k1","X","b",4,"k1","ZY");
 	allStates[4] = state("k1","Y","a",5,"k1","a");
@@ -58,11 +56,11 @@ Automaton::Automaton()						//constructor
     	allStates[18] = state("k1","$","e",19,"k2","e");
     	currentState = "k1";					//initial state of pushdown automaton
    	symbolStack.push("$");
-	symbolStack.push("S");
+	symbolStack.push("S");					//Symbol stack initialization.
 	root = SymbolTree::createNode('S');
-	currentNode = root;
-	tree.push_back("S");				//Symbol stack initialization.	
-	currentRank++;				
+	currentNode = root;					//Syntax tree initialization					
+	currentRank++;
+	tree.push_back("S");				
 }
 
 
@@ -87,14 +85,11 @@ bool Automaton::Start(std::queue<std::string>inputQueue){
 		return false;
 	    }
 	    if (currentState=="k2"){
-		std::cout<< "Recognized"<<std::endl;
+		std::cout<< "Recognized"<<std::endl << std::endl;
 		tree.pop_back();				// remove last "e"	
 								
-		for(auto i=tree.begin();i!=tree.end();++i){
-			std::cout << *i << " ";
-		}
-		std::cout << Tree_Depth() << std::endl;
-		PrettyPrint::DisplayTree(root,true,true,ceil((double)Tree_Depth()/2));
+		std::cout << "Tree depth is " << Tree_Depth() << std::endl;
+		PrettyPrint::DisplayTree(root,true,true,ceil((double)Tree_Depth()/2));	//print syntax tree of recognized sequence
 		break;
 	    }
         }
@@ -102,13 +97,13 @@ bool Automaton::Start(std::queue<std::string>inputQueue){
     return true;
 }
 
-bool Automaton::Feed(std::string input){				//check for appropriate rule and then apply it
+bool Automaton::Feed(std::string input){						//check for appropriate rule and then apply it
     right = false;
     for(int i=0; i<19;i++){
         if(IsValidState(allStates[i], input)){
             right = true;
-	    currentState = allStates[i].GetNtState();		//move on to the next state
-	    ruleNum = allStates[i].GetRuleNumber();						//modify the stack according to the appropriate rule
+	    currentState = allStates[i].GetNtState();					//move on to the next state
+	    ruleNum = allStates[i].GetRuleNumber();					//modify the stack according to the appropriate rule
 	    if (!done){
 		PrettyPrint::print(symbolStack, currentState, inputQ, allStates[i].GetRuleNumber());
 		OperateStack(allStates[i].GetRuleNumber());
@@ -121,7 +116,7 @@ bool Automaton::Feed(std::string input){				//check for appropriate rule and the
     return false;
 }
 
-bool Automaton::IsValidState(state cstate,std::string symbol){	//check if given rule can be applied
+bool Automaton::IsValidState(state cstate,std::string symbol){				//check if given rule can be applied
 
     if(cstate.isValidInput(symbol)&&
     cstate.GetStName()==currentState&&
@@ -135,18 +130,15 @@ bool Automaton::IsValidState(state cstate,std::string symbol){	//check if given 
     
 }
 
-void Automaton::OperateStack(int symbol){
+void Automaton::OperateStack(int symbol){						//apply rule and construct syntax tree
     	
 	if (symbol==1){
 		symbolStack.pop();
 		symbolStack.push(")");
 		symbolStack.push("X");
 		symbolStack.push("(");
-
-		tree.push_back("(");
-		tree.push_back("X");
-		tree.push_back(")");
 		done = true;
+		
 		currentNode -> left = SymbolTree::createNode('(');
 		currentNode -> left -> parent = currentNode;
 
@@ -158,13 +150,17 @@ void Automaton::OperateStack(int symbol){
 		currentNode = currentNode -> middle;
 		currentRank++;
 	
+		tree.push_back("(");
+		tree.push_back("X");
+		tree.push_back(")");
+
 	}else if(symbol>=2 && symbol<=4){
 		symbolStack.pop();
 		symbolStack.push("Z");
 		symbolStack.push("Y");
-		
+		done = true;
+
 		backtracking.push(currentRank);
-		//PrettyPrint::backTracking.push(currentRank);
 		currentNode -> left = SymbolTree::createNode('Y');
 		currentNode -> left -> parent = currentNode;
 
@@ -175,30 +171,33 @@ void Automaton::OperateStack(int symbol){
 
 		tree.push_back("Y");
 		tree.push_back("Z");
-		done = true;
+		
 	}else if(symbol==5){
 		symbolStack.pop();
 		symbolStack.push("a");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('a');
 		currentNode -> left -> parent = currentNode;
 		goBack();
-
+		
 		tree.push_back("a");
-		done = true;
+
 	}else if(symbol==6){
 		symbolStack.pop();
 		symbolStack.push("b");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('b');
 		currentNode -> left -> parent = currentNode;
 		goBack();
-
+		
 		tree.push_back("b");
-		done = true;
+		
 	}else if(symbol==7){
 		symbolStack.pop();
 		symbolStack.push("S");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('S');
 		currentNode -> left -> parent = currentNode;
@@ -207,11 +206,12 @@ void Automaton::OperateStack(int symbol){
 		currentRank++;
 
 		tree.push_back("S");
-		done = true;
+
 	}else if(symbol==8){
 		symbolStack.pop();
 		symbolStack.push("X");
 		symbolStack.push("*");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('*');
 		currentNode -> left -> parent = currentNode;
@@ -224,11 +224,12 @@ void Automaton::OperateStack(int symbol){
 
 		tree.push_back("*");
 		tree.push_back("X");
-		done = true;
+		
 	}else if(symbol==9){
 		symbolStack.pop();
 		symbolStack.push("X");
 		symbolStack.push("-");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('-');
 		currentNode -> left -> parent = currentNode;
@@ -241,11 +242,12 @@ void Automaton::OperateStack(int symbol){
 
 		tree.push_back("-");
 		tree.push_back("X");
-		done = true;
+
 	}else if(symbol==10){
 		symbolStack.pop();
 		symbolStack.push("X");
 		symbolStack.push("+");
+		done = true;
 
 		currentNode -> left = SymbolTree::createNode('+');
 		currentNode -> left -> parent = currentNode;
@@ -258,7 +260,7 @@ void Automaton::OperateStack(int symbol){
 
 		tree.push_back("+");
 		tree.push_back("X");
-		done = true;
+		
 	}else{
 		goBack();
 		tree.push_back("e");
@@ -282,7 +284,7 @@ int Automaton::Tree_Depth(){
 	return *max_element(max.begin(), max.end())+1;		// tree depth is the bond number plus 1
 }
 
-void Automaton::goBack(){
+void Automaton::goBack(){					//tree backtracking in order to place the node in the right position
 	if(!backtracking.empty()){
 	for(int i=0; i < (currentRank-backtracking.top()); i++){
 		currentNode = currentNode -> parent;
