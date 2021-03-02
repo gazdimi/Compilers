@@ -5,7 +5,6 @@
 #include <algorithm>
 #include "State.h"
 #include "PrettyPrint.h"
-#include "SymbolTree.h"
 class Automaton
 {
 private:
@@ -95,7 +94,7 @@ bool Automaton::Start(std::queue<std::string>inputQueue){
 			std::cout << *i << " ";
 		}
 		std::cout << Tree_Depth() << std::endl;
-		PrettyPrint::Print_tree(tree,Tree_Depth());
+		PrettyPrint::DisplayTree(root,true,true,ceil((double)Tree_Depth()/2));
 		break;
 	    }
         }
@@ -165,6 +164,7 @@ void Automaton::OperateStack(int symbol){
 		symbolStack.push("Y");
 		
 		backtracking.push(currentRank);
+		//PrettyPrint::backTracking.push(currentRank);
 		currentNode -> left = SymbolTree::createNode('Y');
 		currentNode -> left -> parent = currentNode;
 
@@ -260,6 +260,7 @@ void Automaton::OperateStack(int symbol){
 		tree.push_back("X");
 		done = true;
 	}else{
+		goBack();
 		tree.push_back("e");
 		symbolStack.pop();
 		done = true;
@@ -282,10 +283,14 @@ int Automaton::Tree_Depth(){
 }
 
 void Automaton::goBack(){
+	if(!backtracking.empty()){
 	for(int i=0; i < (currentRank-backtracking.top()); i++){
 		currentNode = currentNode -> parent;
-		currentRank--;
+		
 	}
+	currentRank = currentRank-(currentRank - backtracking.top());
 	backtracking.pop();
 	currentNode = currentNode -> right;
+	currentRank++;
+	}
 }
