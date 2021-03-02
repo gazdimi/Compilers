@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include "SymbolTree.h"
-#include <iomanip> 
 
 class PrettyPrint
 {

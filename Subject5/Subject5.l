@@ -22,20 +22,9 @@ ALPHABET [A-H]
 void isValid(char *input){
 
 	int dups[8]={0,0,0,0,0,0,0,0};
-	
-
-
-	char *token = strtok(input, " ");	
-	while (token != NULL){
-        	token = strtok(NULL, " ");
-		printf("\naa",token);
-        }
-	
 
 	char *i;
-	for(i=token;*i;i++){
-		printf(i);
-		printf("\n");
+	for(i=input;*i;i++){
 		if(*i==(char) 'A'){
 			dups[0]++;
 		}else if(*i==(char) 'B'){
